@@ -1,5 +1,6 @@
 class GroupsController < ApplicationController
-  before_action :authenticate_user! , only: [:new, :create]
+  before_action :authenticate_user! , only: [:new, :create, :edit, :update, :destroy]
+  before_action :find_group_and_check_permission, only: [:edit, :update, :destory]
   def index
     @groups = Group.all
   end
@@ -11,7 +12,7 @@ class GroupsController < ApplicationController
   def create
     @group = Group.new(group_params)
     @group.user = current_user
-    
+
     if @group.save
       redirect_to groups_path
     else
@@ -21,14 +22,14 @@ class GroupsController < ApplicationController
 
   def show
     @group = Group.find(params[:id])
+    @posts = @group.posts
   end
 
   def edit
-    @group = Group.find(params[:id])
   end
 
   def update
-    @group = Group.find(params[:id])
+
     if @group.update(group_params)
       redirect_to groups_path, notice: "更新成功"
     else
@@ -37,7 +38,7 @@ class GroupsController < ApplicationController
   end
 
   def destroy
-    @group = Group.find(params[:id])
+
     @group.destroy
     flash[:alert] = "删除成功"
     redirect_to groups_path
@@ -48,4 +49,13 @@ class GroupsController < ApplicationController
   def group_params
     params.require(:group).permit(:title, :description)
   end
+
+  def find_group_and_check_permission
+    @group = Group.find(params[:id])
+
+    if current_user != @group.user
+      redirect_to root_path, alert: "你没有权限"
+    end
+  end
+
 end
