@@ -1,0 +1,2 @@
+module Accpunt::PostsHelper
+end
